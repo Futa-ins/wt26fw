@@ -228,7 +228,8 @@ const BOOK_LINK=[[/SHORT MONSTER|MONSTER PARKA|MONSTER PANTS/,17],[/HAPPY JACKET
 const bookPage=d=>{const s=(d.name+' '+d.fabrics.join(' ')).toUpperCase();const m=BOOK_LINK.find(([r])=>r.test(s));return m?m[1]:0};
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let state={q:'',cat:''};
-const thumb=d=>d.imgs.length?d.imgs[d.colors[0]?.img??0]?.f||d.imgs[0].f:'';
+const coverIdx=d=>{const i=d.colors.findIndex(c=>c.img!=null&&!/BLACK|BLK/i.test(c.disp+' '+c.name));return i<0?0:i};
+const thumb=d=>{if(!d.imgs.length)return '';const c=d.colors[coverIdx(d)];return c&&c.img!=null?d.imgs[c.img].f:d.imgs[0].f};
 function card(d){
   return `<button class="card" data-go="p-${esc(d.code)}">
     <div class="ph">${thumb(d)?`<img loading="lazy" src="${thumb(d)}" alt="${esc(d.name)}">`:''}</div>
@@ -277,7 +278,7 @@ function renderProduct(code,fromTab){
   <div class="pp">
     <div class="gallery">
       <div class="main-ph">${d.imgs.length?`<img id="mainimg" src="${thumb(d)}" alt="${esc(d.name)}">`:''}</div>
-      <div class="cap" id="maincap">${esc(d.colors[0]?.disp||'')}</div>
+      <div class="cap" id="maincap">${esc(d.colors[coverIdx(d)]?.disp||'')}</div>
     </div>
     <div class="spec">
       <span class="code">${esc(d.code)}</span>
@@ -285,7 +286,7 @@ function renderProduct(code,fromTab){
       <div class="sales"><span class="on">宮下販売</span><span class="on">TGM販売</span></div>
       ${bookPage(d)?`<button class="booklink" data-go="brand-p${bookPage(d)}">ブランドブックで背景を見る（P.${bookPage(d)}）→</button>`:''}
       <section><h4>商品説明</h4><p class="txt">${esc(d.detail)||'—'}</p></section>
-      <section><h4>カラー展開（${d.colors.length}色）</h4><div class="colorlist">${d.colors.map((c,i)=>`<button data-ci="${i}" aria-pressed="${i===0}">${c.img!=null?`<img src="${d.imgs[c.img].f}" alt="">`:''}${esc(c.disp)}</button>`).join('')}</div></section>
+      <section><h4>カラー展開（${d.colors.length}色）</h4><div class="colorlist">${d.colors.map((c,i)=>`<button data-ci="${i}" aria-pressed="${i===coverIdx(d)}">${c.img!=null?`<img src="${d.imgs[c.img].f}" alt="">`:''}${esc(c.disp)}</button>`).join('')}</div></section>
       <section><h4>サイズ展開</h4><div class="sizes">${d.sizes.map(s=>`<span>${esc(s)}</span>`).join('')}</div></section>
       <section><h4>寸法</h4><div class="tbl"><table><thead><tr><th>部位</th>${ms.map(s=>`<th>${esc(s)}</th>`).join('')}</tr></thead>
         <tbody>${d.meas.map(r=>`<tr><td>${esc(r.part)}</td>${ms.map(s=>`<td>${r[s]??'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="unit">単位：cm　平置き実寸。個体差により多少の誤差があります。</div></section>
